@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Таблица кадровых центров</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap&https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900');
+
+    :root {
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface2: #eaeef2;
+      --border: #d0d7de;
+      --accent: #0969da;
+      --accent2: #1a7f37;
+      --accent3: #cf222e;
+      --accent4: #8250df;
+      --accent5: #bc4c00;
+      --text: #24292f;
+      --text2: #57606a;
+      --text3: #8c959f;
+      --pill-bg: #f6f8fa;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Geologica', sans-serif;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f6ff 50%, #e8f0fe 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 36px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-left h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .header-left p {
+      font-size: 0.78rem;
+      color: var(--text2);
+      font-family: 'Montserrat', monospace;
+      margin-top: 3px;
+    }
+
+    .date-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'Montserrat', monospace;
+      padding: 6px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Tabs */
+    .tabs-wrapper {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 36px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tabs-wrapper::-webkit-scrollbar { display: none; }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      min-width: max-content;
+    }
+
+    .tab {
+      padding: 14px 18px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+      user-select: none;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Content */
+    .content { padding: 28px 36px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Dashboard grid */
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .dash-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .dash-subtitle {
+      font-size: 0.82rem;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    /* KPI Cards */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 13px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .kpi:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+    .kpi::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+      border-radius: 10px 0 0 10px;
+    }
+    .kpi.blue::before    { background: var(--accent); }
+    .kpi.green::before   { background: var(--accent2); }
+    .kpi.red::before     { background: var(--accent3); }
+    .kpi.purple::before  { background: var(--accent4); }
+    .kpi.orange::before  { background: var(--accent5); }
+    .kpi.yellow::before  { background: #e3b341; }
+    .kpi.lavender::before{ background: #d2a8ff; }
+    .kpi.maroon::before  { background: #800000; }
+    .kpi.dGreen::before  { background: #006400; }
+    .kpi.lime::before    { background: #2da44e; }
+    .kpi.teal::before    { background: #0598bc; }
+    .kpi.cyan::before    { background: #79c0ff; }
+    .kpi.pink::before    { background: #f778ba; }
+
+    .kpi-label {
+      font-size: 0.68rem;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .kpi-value {
+      font-size: 1.65rem;
+      font-weight: 900;
+      font-family: 'Montserrat', monospace;
+      line-height: 1;
+      color: var(--text);
+    }
+    .kpi-sub {
+      font-size: 0.74rem;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+    .kpi-delta {
+      font-size: 0.74rem;
+      font-family: 'Montserrat', monospace;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .delta-pos { color: var(--accent2); }
+    .delta-neg { color: var(--accent3); }
+    .delta-neu { color: var(--text3); }
+
+    /* Charts grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .charts-grid.single { grid-template-columns: 1fr; }
+    .charts-grid.third { grid-template-columns: 1fr 1fr 1fr; }
+
+    @media (max-width: 900px) {
+      .charts-grid, .charts-grid.third { grid-template-columns: 1fr; }
+      .content { padding: 20px 16px; }
+      .header { padding: 20px 16px; }
+      .tabs-wrapper { padding: 0 16px; }
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s ease;
+    }
+    .chart-card:hover { border-color: #0969da; }
+
+    .chart-card-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text2);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-card-title::before {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+    }
+    .chart-container.h200 { height: 200px; }
+    .chart-container.h260 { height: 260px; }
+    .chart-container.h300 { height: 300px; }
+    .chart-container.h340 { height: 340px; }
+    .chart-container.h380 { height: 380px; }
+    .chart-container.h160 { height: 160px; }
+    .chart-container.h320 { height: 320px; }
+    .chart-container.h560 { height: 560px; }
+    .chart-container.h700 { height: 700px; }
+
+    /* Summary table */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 8px;
+    }
+    .summary-table th {
+      background: var(--surface2);
+      color: var(--text2);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.72rem;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #eaeef2;
+      color: var(--text);
+      font-family: 'Montserrat', monospace;
+      font-size: 0.83rem;
+    }
+    .summary-table tr:hover td { background: var(--surface2); }
+    .summary-table td:first-child {
+      font-family: 'Geologica', sans-serif;
+      font-size: 0.78rem;
+      color: var(--text);
+      max-width: 260px;
+    }
+    .summary-table td.bold { font-weight: 700; color: var(--accent); }
+
+    .num-pos { color: var(--accent2); }
+    .num-neg { color: var(--accent3); }
+    .num-0 { color: var(--text3); }
+
+    /* Divider label */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin: 24px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Кадровые центры — Архангельская область</h1>
+    <p>Еженедельный мониторинг · Сверка СВО 2026 г.</p>
+  </div>
+  <div class="date-badge" id="date-badge">…</div>
+</div>
+
+<div class="tabs-wrapper">
+  <div class="tabs" id="tabs">
+    <!-- Tabs populated by JS -->
+  </div>
+</div>
+
+<div class="content" id="content">
+  <!-- Panels populated by JS -->
+</div>
+
+<script>
+  // =============================================
+  // DATA  ← CHANGES EACH WEEK
+  // =============================================
+  const REPORT_FILE = 'СВО на 07.05.2026.xlsx';  //
+
+  let CENTERS = [];      // populated by loadReport()
+  let currentDate = '—'; // extracted from xlsx sheet name
+
+  // Chart.js global defaults
+  Chart.defaults.color = '#57606a';
+  Chart.defaults.font.family = "'Montserrat', monospace";
+  Chart.defaults.font.size = 13;
+
+  const COLORS = {
+    blue:   '#0000FF',
+    blue2:  '#1f6feb',
+    cyan:   '#79c0ff',
+    red:    '#f78166',
+    red2:   '#da3633',
+    orange: '#ffa657',
+    orange2:'#e85d04',
+    purple: '#d2a8ff',
+    yellow: '#e3b341',
+    pink:   '#f778ba',
+    green:  '#58a6ff',
+    teal:   '#79c0ff',
+    maroon: '#800000',
+    lime:   '#00FF00',
+    blue3:  '#2e5894',
+    RED:    '#ff0000',
+    dGreen:  '#006400',
+  };
+  const PIE_COLORS = [COLORS.blue, COLORS.red, COLORS.orange, COLORS.purple, COLORS.cyan, COLORS.yellow, COLORS.pink, COLORS.blue2, COLORS.red2, COLORS.orange2];
+
+  function alpha(hex, a) {
+    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  const chartInstances = {};
+  function destroyChart(id) {
+    if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+  }
+
+  function createDonut(id, labels, values, colors) {
+    destroyChart(id);
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    const total = values.reduce((a,b)=>a+b,0);
+    chartInstances[id] = new Chart(ctx, {
+      type: 'doughnut',
+      plugins: [ChartDataLabels],
+      data: {
+        labels,
+        datasets: [{ data: values, backgroundColor: colors || PIE_COLORS, borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true, pointStyleWidth: 10, color: '#57606a', font: { size: 10 } } },
+          tooltip: { callbacks: { label: (c) => ` ${c.label}: ${c.raw} (${total>0?Math.round(c.raw/total*100):0}%)` } },
+          datalabels: {
+            color: '#fff',
+            font: { weight: 'bold', size: 13, family: "'Montserrat', monospace" },
+            formatter: (value) => value > 0 ? value : '',
+            textShadowBlur: 4,
+            textShadowColor: 'rgba(0,0,0,0.7)',
+          }
+        }
+      }
+    });
+  }
+
+  function createBar(id, labels, datasets, opts={}) {
+    destroyChart(id);
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    chartInstances[id] = new Chart(ctx, {
+      type: 'bar',
+      plugins: opts.plusLabels ? [ChartDataLabels] : [],
+      data: { labels, datasets },
+      options: {
+        indexAxis: opts.horizontal ? 'y' : 'x',
+        responsive: true, maintainAspectRatio: false,
+        clip: false,
+        layout: { padding: { right: opts.rightPadding || 0, top: opts.topPadding || 0, left: opts.leftPadding || 0 } },
+        plugins: {
+          legend: { display: opts.legend !== false, labels: { color: '#57606a', usePointStyle: true, pointStyleWidth: 10, font: { size: 11 } } },
+          datalabels: opts.plusLabels ? {
+            color: (ctx) => ctx.dataset.datalabelColor || '#1a7f37',
+            font: { weight: 'bold', size: 10, family: "'Montserrat', monospace" },
+            formatter: (value, ctx) => {
+              if (!value || value <= 0) return '';
+              const dsLabel = ctx.dataset.label || '';
+              if (opts.plusLabelsFilter && !dsLabel.includes(opts.plusLabelsFilter)) return '';
+              if (opts.plusLabelsIndex !== undefined && ctx.dataIndex !== opts.plusLabelsIndex) return '';
+              return `+${value}`;
+            },
+            anchor: 'end',
+            align: opts.horizontal ? 'right' : 'top',
+            offset: opts.staggerLabels ? (ctx) => ctx.datasetIndex % 2 === 1 ? 18 : 4 : 4,
+            clamp: false,
+          } : { display: false },
+        },
+        scales: {
+          x: { stacked: opts.stacked, grid: { color: '#e5e8eb' }, ticks: { color: '#57606a', font: { size: 12 }, stepSize: 1 }, beginAtZero: true, suggestedMax: opts.suggestedMax ?? 10 },
+          y: { stacked: opts.stacked, grid: { color: '#e5e8eb' }, ticks: { color: '#57606a', font: { size: 12 }, stepSize: 1 }, beginAtZero: true, ...(!opts.horizontal ? { suggestedMax: opts.suggestedMax ?? 10 } : {}) }
+        }
+      }
+    });
+  }
+
+  function delta(v, prev) {
+    if (v === prev) return `<span class="delta-neu">= без изм.</span>`;
+    if (v > prev) return `<span class="delta-pos">▲ +${v - prev} за пред. нед.</span>`;
+    return `<span class="delta-neg">▼ ${v - prev} за пред. нед.</span>`;
+  }
+
+  function num(v) {
+    if (v === 0) return `<span class="num-0">0</span>`;
+    if (v > 0) return `<span>${v}</span>`;
+    return `<span class="num-neg">${v}</span>`;
+  }
+
+  // =============================================
+  // BUILD DASHBOARD FOR ONE CENTER
+  // =============================================
+  function buildDashboard(data, panelId) {
+    const panel = document.getElementById(panelId);
+    const isTotal = (panelId === 'panel-total');
+
+    panel.innerHTML = `
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">${data.name}</div>
+        <div class="dash-subtitle">Состояние на 7 мая 2026 г.&nbsp;·&nbsp; Еженедельная сверка</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi blue">
+        <div class="kpi-label">Состояло</div>
+        <div class="kpi-value">${data.состояли_31_12}</div>
+        <div class="kpi-sub">на 31.12.2025</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">Обратились всего</div>
+        <div class="kpi-value">${data.обратились_всего}</div>
+        <div class="kpi-delta">${delta(data.обратились_всего, data.обратились_пред)}</div>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-label">Снято с учёта</div>
+        <div class="kpi-value">${data.сняты_всего}</div>
+        <div class="kpi-delta">${delta(data.сняты_всего, data.сняты_пред)}</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">Трудоустроено</div>
+        <div class="kpi-value">${data.труд_всего}</div>
+        <div class="kpi-delta">${delta(data.труд_всего, data.труд_пред)}</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">Состоит на учёте</div>
+        <div class="kpi-value">${data.состоит}</div>
+        <div class="kpi-sub">на ${currentDate}</div>
+      </div>
+      <div class="kpi purple">
+        <div class="kpi-label">Инвалидов</div>
+        <div class="kpi-value">${data.инвалид}</div>
+        <div class="kpi-sub">${data.состоит > 0 ? Math.round((data.инвалид)/data.состоит*100) : 0}% от состоящих</div>
+      </div>
+      <div class="kpi yellow">
+        <div class="kpi-label">ИТУ (судимость)</div>
+        <div class="kpi-value">${data.иту}</div>
+        <div class="kpi-sub">${data.состоит > 0 ? Math.round((data.иту)/data.состоит*100) : 0}% от состоящих</div>
+      </div>
+      <div class="kpi lavender">
+        <div class="kpi-label">ИТУ + Инвалид</div>
+        <div class="kpi-value">${data.иту_инв || 0}</div>
+        <div class="kpi-sub">оба статуса</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">На обучение</div>
+        <div class="kpi-value">${data.обуч_направлено}</div>
+        <div class="kpi-sub">направлено</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">Обучение</div>
+        <div class="kpi-value">${data.обуч_завершили}</div>
+        <div class="kpi-sub">завершили</div>
+      </div>
+    </div>
+
+    <div class="section-label">Состав состоящих на учёте</div>
+    <div class="charts-grid third">
+      <div class="chart-card">
+        <div class="chart-card-title">По образованию</div>
+        <div class="chart-container h200"><canvas id="${panelId}-edu"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">По возрасту</div>
+        <div class="chart-container h200"><canvas id="${panelId}-age"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Особые категории</div>
+        <div class="chart-container h200"><canvas id="${panelId}-special"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-label">Динамика обращений и снятий</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Обращение и снятие — нарастающий итог / прирост за нед.</div>
+        <div class="chart-container h320"><canvas id="${panelId}-dynamics"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Причины снятия с учёта — нарастающий итог / прирост за нед.</div>
+        <div class="chart-container h320"><canvas id="${panelId}-reasons"></canvas></div>
+      </div>
+    </div>
+  `;
+
+    // Education donut
+    const eduTotal = data.во + data.спо + data.иное_обр;
+    if (eduTotal > 0) {
+      createDonut(`${panelId}-edu`,
+              ['Высшее (ВО)', 'Среднее проф. (СПО)', 'Иное'],
+              [data.во, data.спо, data.иное_обр],
+              [COLORS.blue, COLORS.cyan, COLORS.orange]
+      );
+    } else {
+      document.getElementById(`${panelId}-edu`).parentElement.parentElement.innerHTML += '<div style="text-align:center;color:#8c959f;font-size:0.75rem;margin-top:20px">Нет данных</div>';
+    }
+
+    // Age donut
+    const ageTotal = data.до30 + data.от30до50 + data.от51;
+    if (ageTotal > 0) {
+      createDonut(`${panelId}-age`,
+              ['До 30 лет', '30–50 лет', 'От 51 года'],
+              [data.до30, data.от30до50, data.от51],
+              [COLORS.blue, COLORS.cyan, COLORS.orange]
+      );
+    } else {
+      document.getElementById(`${panelId}-age`).parentElement.parentElement.innerHTML += '<div style="text-align:center;color:#8c959f;font-size:0.75rem;margin-top:20px">Нет данных</div>';
+    }
+
+    // Special categories — exclusive breakdown:
+    // инвалид = only disabled (not ИТУ), иту = only ИТУ (not disabled), иту_инв = both
+    // noSpec + инвалид + иту + иту_инв = состоит exactly
+    const noSpec = data.состоит - data.инвалид - data.иту - (data.иту_инв || 0);
+    createBar(`${panelId}-special`,
+            ['Без особого статуса', 'Только инвалид', 'Только ИТУ', 'Инвалид + ИТУ'],
+            [{ data: [Math.max(0, noSpec), data.инвалид, data.иту, data.иту_инв || 0],
+               backgroundColor: [alpha(COLORS.blue,0.8), alpha(COLORS.cyan,0.8), alpha(COLORS.orange,0.8), alpha(COLORS.purple,0.8)],
+               borderColor: [COLORS.blue, COLORS.cyan, COLORS.orange, COLORS.purple],
+               borderWidth: 1 }],
+            { horizontal: true, legend: false }
+    );
+
+    // Dynamics: 4 datasets — base (dim) + prirост (bright) per category
+    const baseApp = data.обратились_всего - data.обратились_нед;
+    const baseRem = data.сняты_всего - data.сняты_нед;
+    createBar(`${panelId}-dynamics`,
+            ['Обратились', 'Снято с учёта'],
+            [
+              { label: 'Обратились — нарастающим итогом', data: [baseApp, 0],                  backgroundColor: alpha(COLORS.blue,0.2),   borderWidth: 0 },
+              { label: 'Обратились — прирост за нед.',    data: [data.обратились_нед, 0],        backgroundColor: alpha(COLORS.blue,0.85),  borderColor: COLORS.blue,  borderWidth: 2, datalabelColor: '#1a7f37' },
+              { label: 'Снято — нарастающим итогом',      data: [0, baseRem],                   backgroundColor: alpha(COLORS.red2,0.2),   borderWidth: 0 },
+              { label: 'Снято — прирост за нед.',         data: [0, data.сняты_нед],             backgroundColor: alpha(COLORS.red2,0.85),  borderColor: COLORS.red2,  borderWidth: 2, datalabelColor: '#cf222e' },
+            ],
+            { legend: true, stacked: true, plusLabels: true, plusLabelsFilter: 'прирост', rightPadding: 45, topPadding: 28 }
+    );
+
+    // Reasons: 4 datasets — base (dim) + prirост (bright) per category
+    const baseTrud = data.труд_всего - data.труд_нед;
+    const baseInya = data.иная_всего - data.иная_нед;
+    createBar(`${panelId}-reasons`,
+            ['Трудоустроено', 'Иные причины'],
+            [
+              { label: 'Трудоустроено — нарастающим итогом', data: [baseTrud, 0],           backgroundColor: alpha(COLORS.blue3,0.2),    borderWidth: 0 },
+              { label: 'Трудоустроено — прирост за нед.',    data: [data.труд_нед, 0],       backgroundColor: alpha(COLORS.blue3,0.85),   borderColor: COLORS.blue3,   borderWidth: 2, datalabelColor: '#0969da' },
+              { label: 'Иные — нарастающим итогом',          data: [0, baseInya],           backgroundColor: alpha(COLORS.orange2,0.2),  borderWidth: 0 },
+              { label: 'Иные — прирост за нед.',             data: [0, data.иная_нед],       backgroundColor: alpha(COLORS.orange2,0.85), borderColor: COLORS.orange2, borderWidth: 2, datalabelColor: '#cf222e' },
+            ],
+            { legend: true, stacked: true, plusLabels: true, plusLabelsFilter: 'прирост', rightPadding: 45, topPadding: 28 }
+    );
+  }
+
+  // =============================================
+  // TOTAL / SUMMARY dashboard
+  // =============================================
+  function buildSummary() {
+    const panel = document.getElementById('panel-total');
+    panel.innerHTML = `
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Архангельская область — Сводный дашборд</div>
+        <div class="dash-subtitle">Все кадровые центры · Состояние на 7 мая 2026 г.</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi blue"><div class="kpi-label">Состояло 31.12.2025</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+c.состояли_31_12,0)}</div><div class="kpi-sub">база на начало года</div></div>
+      <div class="kpi green"><div class="kpi-label">Обратились всего</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+c.обратились_всего,0)}</div><div class="kpi-delta"><span class="delta-pos">▲ +${CENTERS.reduce((s,c)=>s+c.обратились_нед,0)} за неделю</span></div></div>
+      <div class="kpi red"><div class="kpi-label">Снято с учёта</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+c.сняты_всего,0)}</div><div class="kpi-delta"><span class="delta-pos">▲ +${CENTERS.reduce((s,c)=>s+c.сняты_нед,0)} за неделю</span></div></div>
+      <div class="kpi orange"><div class="kpi-label">Трудоустроено</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+c.труд_всего,0)}</div><div class="kpi-delta"><span class="delta-pos">▲ +${CENTERS.reduce((s,c)=>s+c.труд_нед,0)} за неделю</span></div></div>
+      <div class="kpi blue"><div class="kpi-label">Состоит на учёте</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+c.состоит,0)}</div><div class="kpi-sub">на ${currentDate}</div></div>
+      <div class="kpi purple"><div class="kpi-label">Инвалиды</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+c.инвалид,0)}</div><div class="kpi-sub">${Math.round(CENTERS.reduce((s,c)=>s+c.инвалид,0)/CENTERS.reduce((s,c)=>s+c.состоит,0)*100)}% от состоящих</div></div>
+      <div class="kpi lime"><div class="kpi-label">ИТУ (судимость)</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+c.иту,0)}</div><div class="kpi-sub">${Math.round(CENTERS.reduce((s,c)=>s+c.иту,0)/CENTERS.reduce((s,c)=>s+c.состоит,0)*100)}% от состоящих</div></div>
+      <div class="kpi teal"><div class="kpi-label">Инвалиды + ИТУ</div><div class="kpi-value">${CENTERS.reduce((s,c)=>s+(c.иту_инв||0),0)}</div><div class="kpi-sub">${Math.round(CENTERS.reduce((s,c)=>s+(c.иту_инв||0),0)/CENTERS.reduce((s,c)=>s+c.состоит,0)*100)}% от состоящих</div></div>
+    </div>
+
+    <div class="section-label">Распределение состоящих на учёте по всем кадровым центрам</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Состоит на учёте в кадровых центрах</div>
+        <div class="chart-container h380"><canvas id="total-bycentre"></canvas></div>
+      </div>
+      <div class="charts-grid single" style="gap:16px;display:flex;flex-direction:column">
+        <div class="chart-card" style="flex:1">
+          <div class="chart-card-title">Образование</div>
+          <div class="chart-container h160"><canvas id="total-edu"></canvas></div>
+        </div>
+        <div class="chart-card" style="flex:1">
+          <div class="chart-card-title">Возраст</div>
+          <div class="chart-container h160"><canvas id="total-age"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Динамика обращений и снятий по кадровым центрам</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Обращение — нарастающим итогом</div>
+        <div class="chart-container h560"><canvas id="total-appeals"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Обращение — за неделю</div>
+        <div class="chart-container h560"><canvas id="total-appeals-week"></canvas></div>
+      </div>
+    </div>
+
+    <div class="charts-grid third">
+      <div class="chart-card">
+        <div class="chart-card-title">Снято — нарастающим итогом</div>
+        <div class="chart-container h560"><canvas id="total-removed"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Снято — за неделю</div>
+        <div class="chart-container h560"><canvas id="total-removed-week"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Причины снятия с учёта</div>
+        <div class="chart-container h700"><canvas id="total-removed-reasons"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-label">Обучение по кадровым центрам</div>
+    <div class="chart-card">
+      <div class="chart-card-title">Направлено и завершили обучение</div>
+      <div class="chart-container h560"><canvas id="total-training"></canvas></div>
+    </div>
+
+    <div class="section-label">Сводная таблица по всем кадровым центрам</div>
+    <div class="chart-card" style="overflow-x:auto;padding:0">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom">Кадровый центр</th>
+            <th rowspan="2" style="vertical-align:center;white-space:nowrap">На 31.12.2025</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #d0d7de">Обратились</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #d0d7de">Снято с учёта</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #d0d7de">Трудоустроено</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #d0d7de">Иная причина</th>
+            <th colspan="4" style="text-align:center;border-bottom:1px solid #d0d7de">Состоит</th>
+            <th colspan="3" style="text-align:center;border-bottom:1px solid #d0d7de">Образование</th>
+            <th colspan="3" style="text-align:center;border-bottom:1px solid #d0d7de">Возраст</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid #d0d7de">Обучение</th>
+          </tr>
+          <tr>
+            <th>Итого</th><th>За нед.</th>
+            <th>Итого</th><th>За нед.</th>
+            <th>Итого</th><th>За нед.</th>
+            <th>Итого</th><th>За нед.</th>
+            <th>на ${currentDate}</th><th>Инвалид</th><th>ИТУ</th><th>ИТУ+Инвалид</th>
+            <th>ВО</th><th>СПО</th><th>Иное</th>
+            <th>до 30</th><th>30–50</th><th>51+</th>
+            <th>Направлено</th><th>Завершили</th>
+          </tr>
+        </thead>
+        <tbody id="summary-tbody"></tbody>
+      </table>
+    </div>
+  `;
+
+    // By centre bar - same value = same colour; Архангельск gets #0000FF
+    const sorted = [...CENTERS].sort((a,b)=>b.состоит - a.состоит).filter(c=>c.состоит > 0);
+    const VALUE_COLORS = ['#0000FF','#79c0ff','#ffa657','#f78166','#d2a8ff','#e3b341','#f778ba','#1f6feb','#da3633','#e85d04'];
+    const valueColorMap = {};
+    let colorIdx = 0;
+    sorted.forEach(c => {
+      const v = c.состоит;
+      if (!(v in valueColorMap)) { valueColorMap[v] = VALUE_COLORS[colorIdx++ % VALUE_COLORS.length]; }
+    });
+    createBar('total-bycentre',
+            sorted.map(c => c.name.replace('КЦ ','').replace('Кадровый центр ','').replace('по ','').replace('г. ','')),
+            [{ data: sorted.map(c=>c.состоит), backgroundColor: sorted.map(c=> c.name.includes('Архангельск') ? '#0000FF' : valueColorMap[c.состоит]), borderWidth: 0 }],
+            { horizontal: true, legend: false }
+    );
+
+    createDonut('total-edu', ['ВО', 'СПО', 'Иное'], [10, 31, 40], [COLORS.blue, COLORS.cyan, COLORS.orange]);
+    createDonut('total-age', ['До 30', '30–50', 'От 51'], [5, 59, 17], [COLORS.blue, COLORS.cyan, COLORS.orange]);
+
+    // Appeals (all centres) — нарастающий итог
+    const allA = [...CENTERS].sort((a,b)=>b.обратились_всего - a.обратились_всего);
+    createBar('total-appeals',
+            allA.map(c=>c.name.replace('КЦ ','')),
+            [
+              { label: 'Нарастающий итог', data: allA.map(c=>c.обратились_всего), datalabelColor: '#1a7f37', backgroundColor: alpha(COLORS.blue,0.6), borderColor: COLORS.blue, borderWidth: 1 },
+            ],
+            { legend: false, horizontal: true, plusLabels: true, rightPadding: 90, leftPadding: 40 }
+    );
+
+    // Appeals (all centres) — за неделю
+    const allAweek = [...CENTERS].sort((a,b)=>b.обратились_нед - a.обратились_нед || b.обратились_всего - a.обратились_всего);
+    createBar('total-appeals-week',
+            allAweek.map(c=>c.name.replace('КЦ ','')),
+            [
+              { label: 'За эту нед.', data: allAweek.map(c=>c.обратились_нед), datalabelColor: '#1a7f37', backgroundColor: alpha(COLORS.blue,0.75), borderColor: COLORS.blue, borderWidth: 1 },
+            ],
+            { legend: false, horizontal: true, plusLabels: true, rightPadding: 50, leftPadding: 40 }
+    );
+
+    // Removals (all centres) — нарастающий итог
+    const allR = [...CENTERS].sort((a,b)=>b.сняты_всего - a.сняты_всего);
+    createBar('total-removed',
+            allR.map(c=>c.name.replace('КЦ ','')),
+            [
+              { label: 'Нарастающий итог', data: allR.map(c=>c.сняты_всего), datalabelColor: '#cf222e', backgroundColor: alpha(COLORS.red,0.6), borderColor: COLORS.red, borderWidth: 1 },
+            ],
+            { legend: false, horizontal: true, plusLabels: true, rightPadding: 45, leftPadding: 40 }
+    );
+
+    // Removals (all centres) — за неделю
+    const allRweek = [...CENTERS].sort((a,b)=>b.сняты_нед - a.сняты_нед || b.сняты_всего - a.сняты_всего);
+    createBar('total-removed-week',
+            allRweek.map(c=>c.name.replace('КЦ ','')),
+            [
+              { label: 'За эту нед.', data: allRweek.map(c=>c.сняты_нед), datalabelColor: '#cf222e', backgroundColor: alpha(COLORS.red2,0.7), borderColor: COLORS.red2, borderWidth: 1, maxBarThickness: 16 },
+            ],
+            { legend: false, horizontal: true, plusLabels: true, rightPadding: 45, leftPadding: 40 }
+    );
+
+    // Reasons (all centres) — причины снятия итого (трудоустройство + иная)
+    const allReasons = [...CENTERS].sort((a,b)=>(b.труд_всего+b.иная_всего) - (a.труд_всего+a.иная_всего));
+    createBar('total-removed-reasons',
+            allReasons.map(c=>c.name.replace('КЦ ','')),
+            [
+              { label: 'Трудоустроено', data: allReasons.map(c=>c.труд_всего), datalabelColor: '#0969da', backgroundColor: alpha(COLORS.blue3,0.75), borderColor: COLORS.blue3, borderWidth: 1 },
+              { label: 'Иные причины',  data: allReasons.map(c=>c.иная_всего), datalabelColor: '#cf222e', backgroundColor: alpha(COLORS.red,0.65),   borderColor: COLORS.red,   borderWidth: 1 },
+            ],
+            { legend: true, stacked: true, horizontal: true, plusLabels: true, rightPadding: 50, leftPadding: 40, staggerLabels: true }
+    );
+
+    // Training chart
+    const allTraining = [...CENTERS].sort((a,b)=>b.обуч_направлено - a.обуч_направлено || b.обуч_завершили - a.обуч_завершили);
+    createBar('total-training',
+            allTraining.map(c=>c.name.replace('КЦ ','')),
+            [
+              { label: 'Направлено на обучение', data: allTraining.map(c=>c.обуч_направлено||0), backgroundColor: alpha(COLORS.blue2,0.75), borderColor: COLORS.blue2, borderWidth: 1 },
+              { label: 'Завершили обучение',      data: allTraining.map(c=>c.обуч_завершили||0),  backgroundColor: alpha(COLORS.dGreen,0.75), borderColor: COLORS.dGreen, borderWidth: 1 },
+            ],
+            { legend: true, horizontal: true }
+    );
+
+    // Table
+    const tbody = document.getElementById('summary-tbody');
+
+    // Totals row first
+    const totals = {
+      name: 'Архангельская область (итого)',
+      состояли_31_12: CENTERS.reduce((s,c)=>s+c.состояли_31_12,0),
+      состоит: CENTERS.reduce((s,c)=>s+c.состоит,0),
+      обратились_пред: CENTERS.reduce((s,c)=>s+c.обратились_пред,0),
+      обратились_всего: CENTERS.reduce((s,c)=>s+c.обратились_всего,0),
+      обратились_нед: CENTERS.reduce((s,c)=>s+c.обратились_нед,0),
+      сняты_пред: CENTERS.reduce((s,c)=>s+c.сняты_пред,0),
+      сняты_всего: CENTERS.reduce((s,c)=>s+c.сняты_всего,0),
+      сняты_нед: CENTERS.reduce((s,c)=>s+c.сняты_нед,0),
+      труд_пред: CENTERS.reduce((s,c)=>s+c.труд_пред,0),
+      труд_всего: CENTERS.reduce((s,c)=>s+c.труд_всего,0),
+      труд_нед: CENTERS.reduce((s,c)=>s+c.труд_нед,0),
+      иная_пред: CENTERS.reduce((s,c)=>s+c.иная_пред,0),
+      иная_всего: CENTERS.reduce((s,c)=>s+c.иная_всего,0),
+      иная_нед: CENTERS.reduce((s,c)=>s+c.иная_нед,0),
+      инвалид: CENTERS.reduce((s,c)=>s+c.инвалид,0),
+      иту: CENTERS.reduce((s,c)=>s+c.иту,0),
+      во: CENTERS.reduce((s,c)=>s+c.во,0),
+      спо: CENTERS.reduce((s,c)=>s+c.спо,0),
+      иное_обр: CENTERS.reduce((s,c)=>s+c.иное_обр,0),
+      до30: CENTERS.reduce((s,c)=>s+c.до30,0),
+      от30до50: CENTERS.reduce((s,c)=>s+c.от30до50,0),
+      от51: CENTERS.reduce((s,c)=>s+c.от51,0),
+      иту_инв: CENTERS.reduce((s,c)=>s+(c.иту_инв||0),0),
+      обуч_направлено: CENTERS.reduce((s,c)=>s+(c.обуч_направлено||0),0),
+      обуч_завершили:  CENTERS.reduce((s,c)=>s+(c.обуч_завершили||0),0),
+    };
+
+    function makeRow(c, isTotal) {
+      const tr = document.createElement('tr');
+      const big  = isTotal ? 'font-size:1.05rem;font-weight:800' : '';
+      const bigN = isTotal ? 'font-size:1.2rem;font-weight:900;color:#0969da' : '';
+      if (isTotal) tr.style.cssText = 'background:#e8f0fe;border-top:2px solid #0969da';
+      const nedPos = (v) => v > 0 ? `<span style="color:#1a7f37;font-weight:700">+${v}</span>` : `<span style="color:#8c959f">—</span>`;
+      const nedNeg = (v) => v > 0 ? `<span style="color:#cf222e;font-weight:700">+${v}</span>` : `<span style="color:#8c959f">—</span>`;
+      tr.innerHTML = `
+        <td style="${isTotal ? 'color:#0969da;font-size:1.05rem;font-weight:800' : ''}">${c.name}</td>
+        <td style="${big}">${c.состояли_31_12 !== undefined ? c.состояли_31_12 : '—'}</td>
+        <td style="${big}">${c.обратились_всего}</td><td>${nedPos(c.обратились_нед)}</td>
+        <td style="${big}">${c.сняты_всего}</td><td>${nedNeg(c.сняты_нед)}</td>
+        <td style="${big}">${c.труд_всего}</td><td>${nedPos(c.труд_нед)}</td>
+        <td style="${big}">${c.иная_всего}</td><td>${nedNeg(c.иная_нед)}</td>
+        <td style="${bigN}">${c.состоит}</td>
+        <td>${c.инвалид > 0 ? `<span style="color:var(--accent3);${big}">${c.инвалид}</span>` : '<span style="color:#8c959f">0</span>'}</td>
+        <td>${c.иту > 0 ? `<span style="color:#e3b341;${big}">${c.иту}</span>` : '<span style="color:#8c959f">0</span>'}</td>
+        <td>${c.иту_инв > 0 ? `<span style="font-weight:700">${c.иту_инв}</span>` : '<span style="color:#8c959f">0</span>'}</td>
+        <td>${c.во}</td><td>${c.спо}</td><td>${c.иное_обр}</td>
+        <td>${c.до30}</td><td>${c.от30до50}</td><td>${c.от51}</td>
+        <td>${c.обуч_направлено > 0 ? `<span style="color:#1a7f37;font-weight:700">${c.обуч_направлено}</span>` : '<span style="color:#8c959f">0</span>'}</td>
+        <td>${c.обуч_завершили  > 0 ? `<span style="color:#0969da;font-weight:700">${c.обуч_завершили}</span>`  : '<span style="color:#8c959f">0</span>'}</td>
+      `;
+      return tr;
+    }
+
+    tbody.appendChild(makeRow(totals, true));
+    CENTERS.forEach(c => tbody.appendChild(makeRow(c, false)));
+  }
+
+  // =============================================
+  // TABS SETUP
+  // =============================================
+  function initDashboard() {
+    // Destroy all existing charts
+    Object.keys(chartInstances).forEach(id => destroyChart(id));
+
+    const tabsEl = document.getElementById('tabs');
+    const contentEl = document.getElementById('content');
+    tabsEl.innerHTML = '';
+    contentEl.innerHTML = '';
+
+    // Total tab
+    const totalTab = document.createElement('div');
+    totalTab.className = 'tab active';
+    totalTab.textContent = '🗺 Область';
+    totalTab.dataset.panel = 'panel-total';
+    tabsEl.appendChild(totalTab);
+    const totalPanel = document.createElement('div');
+    totalPanel.id = 'panel-total';
+    totalPanel.className = 'panel active';
+    contentEl.appendChild(totalPanel);
+
+    // Per-centre tabs
+    CENTERS.forEach((c, i) => {
+      const shortName = c.name.replace('КЦ ','').replace('по г. ','г. ').replace('по г.','г.').replace('по ','');
+      const tab = document.createElement('div');
+      tab.className = 'tab';
+      tab.textContent = shortName;
+      tab.dataset.panel = `panel-${i}`;
+      tabsEl.appendChild(tab);
+
+      const panel = document.createElement('div');
+      panel.id = `panel-${i}`;
+      panel.className = 'panel';
+      contentEl.appendChild(panel);
+    });
+
+    // Tab click logic
+    tabsEl.addEventListener('click', (e) => {
+      const tab = e.target.closest('.tab');
+      if (!tab) return;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const panelId = tab.dataset.panel;
+      const panel = document.getElementById(panelId);
+      panel.classList.add('active');
+
+      // Lazy build
+      if (!panel.dataset.built) {
+        if (panelId === 'panel-total') {
+          buildSummary();
+        } else {
+          const idx = parseInt(panelId.replace('panel-',''));
+          buildDashboard(CENTERS[idx], panelId);
+        }
+        panel.dataset.built = '1';
+      }
+
+      // Replay animation on every tab open
+      panel.querySelectorAll('canvas').forEach(canvas => {
+        const chart = chartInstances[canvas.id];
+        if (chart) { chart.reset(); chart.update(); }
+      });
+    });
+
+    // Build initial (summary)
+    buildSummary();
+    document.getElementById('panel-total').dataset.built = '1';
+  }
+
+  // =============================================
+  // LOAD REPORT FROM XLSX
+  // =============================================
+  async function loadReport() {
+    try {
+      const resp = await fetch(REPORT_FILE);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const buf  = await resp.arrayBuffer();
+      const wb   = XLSX.read(buf, { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows  = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: 0 });
+
+      // Extract date from sheet name ("состоят на учете на 23.04.26" → "23.04.2026")
+      const m = wb.SheetNames[0].match(/(\d{2}\.\d{2}\.)(\d{2})$/);
+      currentDate = m
+        ? `${m[1]}20${m[2]}`
+        : (REPORT_FILE.match(/\d{2}\.\d{2}\.\d{4}/)?.[0] || '—');
+
+      // Rows 6–27 = array index 5–26
+      CENTERS = rows.slice(5, 27).map(r => ({
+        name:             String(r[0]  || ''),
+        состояли_31_12:   +r[1]  || 0,
+        обратились_пред:  +r[2]  || 0,
+        обратились_всего: +r[3]  || 0,
+        обратились_нед:   +r[4]  || 0,
+        сняты_пред:       +r[5]  || 0,
+        сняты_всего:      +r[6]  || 0,
+        сняты_нед:        +r[7]  || 0,
+        труд_пред:        +r[8]  || 0,
+        труд_всего:       +r[9]  || 0,
+        труд_нед:         +r[10] || 0,
+        иная_пред:        +r[11] || 0,
+        иная_всего:       +r[12] || 0,
+        иная_нед:         +r[13] || 0,
+        обуч_направлено:  +r[14] || 0,
+        обуч_завершили:   +r[15] || 0,
+        состоит:          +r[16] || 0,
+        инвалид:          +r[17] || 0,
+        иту:              +r[18] || 0,
+        иту_инв:          +r[19] || 0,
+        во:               +r[20] || 0,
+        спо:              +r[21] || 0,
+        иное_обр:         +r[22] || 0,
+        до30:             +r[23] || 0,
+        от30до50:         +r[24] || 0,
+        от51:             +r[25] || 0,
+      })).filter(c => c.name.trim() !== '');
+
+      // Update date badge + page title
+      document.getElementById('date-badge').textContent = currentDate;
+      document.title = `Таблица кадровых центров — ${currentDate} г.`;
+
+      initDashboard();
+    } catch (err) {
+      document.getElementById('date-badge').textContent = '⚠ ошибка';
+      console.error('loadReport error:', err);
+      alert(`Не удалось загрузить файл "${REPORT_FILE}".\nОткройте HTML через сервер (WebStorm / python3 -m http.server).\n\n${err}`);
+    }
+  }
+
+  loadReport();
+</script>
+</body>
+</html>
