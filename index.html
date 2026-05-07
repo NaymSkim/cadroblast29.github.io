@@ -599,9 +599,9 @@
     createBar(`${panelId}-special`,
             ['Без особого статуса', 'Только инвалид', 'Только ИТУ', 'Инвалид + ИТУ'],
             [{ data: [Math.max(0, noSpec), data.инвалид, data.иту, data.иту_инв || 0],
-               backgroundColor: [alpha(COLORS.blue,0.8), alpha(COLORS.cyan,0.8), alpha(COLORS.orange,0.8), alpha(COLORS.purple,0.8)],
-               borderColor: [COLORS.blue, COLORS.cyan, COLORS.orange, COLORS.purple],
-               borderWidth: 1 }],
+              backgroundColor: [alpha(COLORS.blue,0.8), alpha(COLORS.cyan,0.8), alpha(COLORS.orange,0.8), alpha(COLORS.purple,0.8)],
+              borderColor: [COLORS.blue, COLORS.cyan, COLORS.orange, COLORS.purple],
+              borderWidth: 1 }],
             { horizontal: true, legend: false }
     );
 
@@ -756,8 +756,8 @@
             { horizontal: true, legend: false }
     );
 
-    createDonut('total-edu', ['ВО', 'СПО', 'Иное'], [10, 31, 40], [COLORS.blue, COLORS.cyan, COLORS.orange]);
-    createDonut('total-age', ['До 30', '30–50', 'От 51'], [5, 59, 17], [COLORS.blue, COLORS.cyan, COLORS.orange]);
+    createDonut('total-edu', ['ВО', 'СПО', 'Иное'], [12, 32, 33], [COLORS.blue, COLORS.cyan, COLORS.orange]);
+    createDonut('total-age', ['До 30', '30–50', 'От 51'], [7, 56, 14], [COLORS.blue, COLORS.cyan, COLORS.orange]);
 
     // Appeals (all centres) — нарастающий итог
     const allA = [...CENTERS].sort((a,b)=>b.обратились_всего - a.обратились_всего);
@@ -971,8 +971,8 @@
       // Extract date from sheet name ("состоят на учете на 23.04.26" → "23.04.2026")
       const m = wb.SheetNames[0].match(/(\d{2}\.\d{2}\.)(\d{2})$/);
       currentDate = m
-        ? `${m[1]}20${m[2]}`
-        : (REPORT_FILE.match(/\d{2}\.\d{2}\.\d{4}/)?.[0] || '—');
+              ? `${m[1]}20${m[2]}`
+              : (REPORT_FILE.match(/\d{2}\.\d{2}\.\d{4}/)?.[0] || '—');
 
       // Rows 6–27 = array index 5–26
       CENTERS = rows.slice(5, 27).map(r => ({
