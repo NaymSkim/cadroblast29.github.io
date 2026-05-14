@@ -323,6 +323,7 @@
       height: 1px;
       background: var(--border);
     }
+
   </style>
 </head>
 <body>
@@ -349,7 +350,7 @@
   // =============================================
   // DATA  ← CHANGES EACH WEEK
   // =============================================
-  const REPORT_FILE = 'СВО на 07.05.2026.xlsx';  //
+  const REPORT_FILE = 'СВО на 14.05.2026.xls';  //
 
   let CENTERS = [];      // populated by loadReport()
   let currentDate = '—'; // extracted from xlsx sheet name
@@ -482,7 +483,7 @@
     <div class="dash-header">
       <div>
         <div class="dash-title">${data.name}</div>
-        <div class="dash-subtitle">Состояние на 7 мая 2026 г.&nbsp;·&nbsp; Еженедельная сверка</div>
+        <div class="dash-subtitle">Состояние на ${currentDate}&nbsp;·&nbsp; Еженедельная сверка</div>
       </div>
     </div>
 
@@ -643,7 +644,7 @@
     <div class="dash-header">
       <div>
         <div class="dash-title">Архангельская область — Сводный дашборд</div>
-        <div class="dash-subtitle">Все кадровые центры · Состояние на 7 мая 2026 г.</div>
+        <div class="dash-subtitle">Все кадровые центры · Состояние на ${currentDate}</div>
       </div>
     </div>
 
@@ -756,8 +757,12 @@
             { horizontal: true, legend: false }
     );
 
-    createDonut('total-edu', ['ВО', 'СПО', 'Иное'], [10, 31, 40], [COLORS.blue, COLORS.cyan, COLORS.orange]);
-    createDonut('total-age', ['До 30', '30–50', 'От 51'], [5, 59, 17], [COLORS.blue, COLORS.cyan, COLORS.orange]);
+    createDonut('total-edu', ['ВО', 'СПО', 'Иное'],
+        [CENTERS.reduce((s,c)=>s+c.во,0), CENTERS.reduce((s,c)=>s+c.спо,0), CENTERS.reduce((s,c)=>s+c.иное_обр,0)],
+        [COLORS.blue, COLORS.cyan, COLORS.orange]);
+    createDonut('total-age', ['До 30', '30–50', 'От 51'],
+        [CENTERS.reduce((s,c)=>s+c.до30,0), CENTERS.reduce((s,c)=>s+c.от30до50,0), CENTERS.reduce((s,c)=>s+c.от51,0)],
+        [COLORS.blue, COLORS.cyan, COLORS.orange]);
 
     // Appeals (all centres) — нарастающий итог
     const allA = [...CENTERS].sort((a,b)=>b.обратились_всего - a.обратились_всего);
