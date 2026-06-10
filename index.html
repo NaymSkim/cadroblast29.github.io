@@ -36,7 +36,7 @@
       padding: 0;
     }
 
-    /* Header */
+
     .header {
       background: linear-gradient(135deg, #ffffff 0%, #f0f6ff 50%, #e8f0fe 100%);
       border-bottom: 1px solid var(--border);
@@ -76,7 +76,7 @@
       letter-spacing: 0.04em;
     }
 
-    /* Tabs */
+
     .tabs-wrapper {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -111,12 +111,12 @@
       border-bottom-color: var(--accent);
     }
 
-    /* Content */
+
     .content { padding: 28px 36px; }
     .panel { display: none; }
     .panel.active { display: block; }
 
-    /* Dashboard grid */
+
     .dash-header {
       display: flex;
       align-items: center;
@@ -137,7 +137,7 @@
       margin-top: 2px;
     }
 
-    /* KPI Cards */
+
     .kpi-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -208,7 +208,7 @@
     .delta-neg { color: var(--accent3); }
     .delta-neu { color: var(--text3); }
 
-    /* Charts grid */
+
     .charts-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -267,7 +267,7 @@
     .chart-container.h560 { height: 560px; }
     .chart-container.h700 { height: 700px; }
 
-    /* Summary table */
+
     .summary-table {
       width: 100%;
       border-collapse: collapse;
@@ -305,7 +305,7 @@
     .num-neg { color: var(--accent3); }
     .num-0 { color: var(--text3); }
 
-    /* Divider label */
+
     .section-label {
       font-size: 0.68rem;
       font-weight: 700;
@@ -338,24 +338,22 @@
 
 <div class="tabs-wrapper">
   <div class="tabs" id="tabs">
-    <!-- Tabs populated by JS -->
+
   </div>
 </div>
 
 <div class="content" id="content">
-  <!-- Panels populated by JS -->
+
 </div>
 
 <script>
-  // =============================================
-  // DATA  ← CHANGES EACH WEEK
-  // =============================================
-  const REPORT_FILE = 'СВО на 28.05.2026.xlsx';  //
 
-  let CENTERS = [];      // populated by loadReport()
-  let currentDate = '—'; // extracted from xlsx sheet name
+  const REPORT_FILE = 'СВО на 10.06.2026.xlsx';  
 
-  // Chart.js global defaults
+  let CENTERS = [];      
+  let currentDate = '—'; 
+
+
   Chart.defaults.color = '#57606a';
   Chart.defaults.font.family = "'Montserrat', monospace";
   Chart.defaults.font.size = 13;
@@ -472,9 +470,7 @@
     return `<span class="num-neg">${v}</span>`;
   }
 
-  // =============================================
-  // BUILD DASHBOARD FOR ONE CENTER
-  // =============================================
+
   function buildDashboard(data, panelId) {
     const panel = document.getElementById(panelId);
     const isTotal = (panelId === 'panel-total');
@@ -569,7 +565,7 @@
     </div>
   `;
 
-    // Education donut
+
     const eduTotal = data.во + data.спо + data.иное_обр;
     if (eduTotal > 0) {
       createDonut(`${panelId}-edu`,
@@ -581,7 +577,7 @@
       document.getElementById(`${panelId}-edu`).parentElement.parentElement.innerHTML += '<div style="text-align:center;color:#8c959f;font-size:0.75rem;margin-top:20px">Нет данных</div>';
     }
 
-    // Age donut
+
     const ageTotal = data.до30 + data.от30до50 + data.от51;
     if (ageTotal > 0) {
       createDonut(`${panelId}-age`,
@@ -593,9 +589,6 @@
       document.getElementById(`${panelId}-age`).parentElement.parentElement.innerHTML += '<div style="text-align:center;color:#8c959f;font-size:0.75rem;margin-top:20px">Нет данных</div>';
     }
 
-    // Special categories — exclusive breakdown:
-    // инвалид = only disabled (not ИТУ), иту = only ИТУ (not disabled), иту_инв = both
-    // noSpec + инвалид + иту + иту_инв = состоит exactly
     const noSpec = data.состоит - data.инвалид - data.иту - (data.иту_инв || 0);
     createBar(`${panelId}-special`,
             ['Без особого статуса', 'Только инвалид', 'Только ИТУ', 'Инвалид + ИТУ'],
@@ -606,7 +599,6 @@
             { horizontal: true, legend: false }
     );
 
-    // Dynamics: 4 datasets — base (dim) + prirост (bright) per category
     const baseApp = data.обратились_всего - data.обратились_нед;
     const baseRem = data.сняты_всего - data.сняты_нед;
     createBar(`${panelId}-dynamics`,
@@ -620,7 +612,7 @@
             { legend: true, stacked: true, plusLabels: true, plusLabelsFilter: 'прирост', rightPadding: 45, topPadding: 28 }
     );
 
-    // Reasons: 4 datasets — base (dim) + prirост (bright) per category
+
     const baseTrud = data.труд_всего - data.труд_нед;
     const baseInya = data.иная_всего - data.иная_нед;
     createBar(`${panelId}-reasons`,
@@ -635,9 +627,7 @@
     );
   }
 
-  // =============================================
-  // TOTAL / SUMMARY dashboard
-  // =============================================
+
   function buildSummary() {
     const panel = document.getElementById('panel-total');
     panel.innerHTML = `
@@ -742,7 +732,7 @@
     </div>
   `;
 
-    // By centre bar - same value = same colour; Архангельск gets #0000FF
+
     const sorted = [...CENTERS].sort((a,b)=>b.состоит - a.состоит).filter(c=>c.состоит > 0);
     const VALUE_COLORS = ['#0000FF','#79c0ff','#ffa657','#f78166','#d2a8ff','#e3b341','#f778ba','#1f6feb','#da3633','#e85d04'];
     const valueColorMap = {};
@@ -764,7 +754,7 @@
         [CENTERS.reduce((s,c)=>s+c.до30,0), CENTERS.reduce((s,c)=>s+c.от30до50,0), CENTERS.reduce((s,c)=>s+c.от51,0)],
         [COLORS.blue, COLORS.cyan, COLORS.orange]);
 
-    // Appeals (all centres) — нарастающий итог
+
     const allA = [...CENTERS].sort((a,b)=>b.обратились_всего - a.обратились_всего);
     createBar('total-appeals',
             allA.map(c=>c.name.replace('КЦ ','')),
@@ -774,7 +764,7 @@
             { legend: false, horizontal: true, plusLabels: true, rightPadding: 90, leftPadding: 40 }
     );
 
-    // Appeals (all centres) — за неделю
+
     const allAweek = [...CENTERS].sort((a,b)=>b.обратились_нед - a.обратились_нед || b.обратились_всего - a.обратились_всего);
     createBar('total-appeals-week',
             allAweek.map(c=>c.name.replace('КЦ ','')),
@@ -784,7 +774,7 @@
             { legend: false, horizontal: true, plusLabels: true, rightPadding: 50, leftPadding: 40 }
     );
 
-    // Removals (all centres) — нарастающий итог
+
     const allR = [...CENTERS].sort((a,b)=>b.сняты_всего - a.сняты_всего);
     createBar('total-removed',
             allR.map(c=>c.name.replace('КЦ ','')),
@@ -794,7 +784,7 @@
             { legend: false, horizontal: true, plusLabels: true, rightPadding: 45, leftPadding: 40 }
     );
 
-    // Removals (all centres) — за неделю
+
     const allRweek = [...CENTERS].sort((a,b)=>b.сняты_нед - a.сняты_нед || b.сняты_всего - a.сняты_всего);
     createBar('total-removed-week',
             allRweek.map(c=>c.name.replace('КЦ ','')),
@@ -804,7 +794,7 @@
             { legend: false, horizontal: true, plusLabels: true, rightPadding: 45, leftPadding: 40 }
     );
 
-    // Reasons (all centres) — причины снятия итого (трудоустройство + иная)
+    
     const allReasons = [...CENTERS].sort((a,b)=>(b.труд_всего+b.иная_всего) - (a.труд_всего+a.иная_всего));
     createBar('total-removed-reasons',
             allReasons.map(c=>c.name.replace('КЦ ','')),
@@ -815,7 +805,7 @@
             { legend: true, stacked: true, horizontal: true, plusLabels: true, rightPadding: 50, leftPadding: 40, staggerLabels: true }
     );
 
-    // Training chart
+    
     const allTraining = [...CENTERS].sort((a,b)=>b.обуч_направлено - a.обуч_направлено || b.обуч_завершили - a.обуч_завершили);
     createBar('total-training',
             allTraining.map(c=>c.name.replace('КЦ ','')),
@@ -826,10 +816,10 @@
             { legend: true, horizontal: true }
     );
 
-    // Table
+    
     const tbody = document.getElementById('summary-tbody');
 
-    // Totals row first
+    
     const totals = {
       name: 'Архангельская область (итого)',
       состояли_31_12: CENTERS.reduce((s,c)=>s+c.состояли_31_12,0),
@@ -889,11 +879,9 @@
     CENTERS.forEach(c => tbody.appendChild(makeRow(c, false)));
   }
 
-  // =============================================
-  // TABS SETUP
-  // =============================================
+
   function initDashboard() {
-    // Destroy all existing charts
+
     Object.keys(chartInstances).forEach(id => destroyChart(id));
 
     const tabsEl = document.getElementById('tabs');
@@ -901,7 +889,7 @@
     tabsEl.innerHTML = '';
     contentEl.innerHTML = '';
 
-    // Total tab
+
     const totalTab = document.createElement('div');
     totalTab.className = 'tab active';
     totalTab.textContent = '🗺 Область';
@@ -912,7 +900,7 @@
     totalPanel.className = 'panel active';
     contentEl.appendChild(totalPanel);
 
-    // Per-centre tabs
+
     CENTERS.forEach((c, i) => {
       const shortName = c.name.replace('КЦ ','').replace('по г. ','г. ').replace('по г.','г.').replace('по ','');
       const tab = document.createElement('div');
@@ -927,7 +915,7 @@
       contentEl.appendChild(panel);
     });
 
-    // Tab click logic
+
     tabsEl.addEventListener('click', (e) => {
       const tab = e.target.closest('.tab');
       if (!tab) return;
@@ -938,7 +926,7 @@
       const panel = document.getElementById(panelId);
       panel.classList.add('active');
 
-      // Lazy build
+
       if (!panel.dataset.built) {
         if (panelId === 'panel-total') {
           buildSummary();
@@ -949,21 +937,19 @@
         panel.dataset.built = '1';
       }
 
-      // Replay animation on every tab open
+
       panel.querySelectorAll('canvas').forEach(canvas => {
         const chart = chartInstances[canvas.id];
         if (chart) { chart.reset(); chart.update(); }
       });
     });
 
-    // Build initial (summary)
+
     buildSummary();
     document.getElementById('panel-total').dataset.built = '1';
   }
 
-  // =============================================
-  // LOAD REPORT FROM XLSX
-  // =============================================
+
   async function loadReport() {
     try {
       const resp = await fetch(REPORT_FILE);
@@ -973,13 +959,12 @@
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows  = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: 0 });
 
-      // Extract date from sheet name ("состоят на учете на 23.04.26" → "23.04.2026")
+
       const m = wb.SheetNames[0].match(/(\d{2}\.\d{2}\.)(\d{2})$/);
       currentDate = m
         ? `${m[1]}20${m[2]}`
         : (REPORT_FILE.match(/\d{2}\.\d{2}\.\d{4}/)?.[0] || '—');
 
-      // Rows 6–27 = array index 5–26
       CENTERS = rows.slice(5, 27).map(r => ({
         name:             String(r[0]  || ''),
         состояли_31_12:   +r[1]  || 0,
@@ -1009,7 +994,7 @@
         от51:             +r[25] || 0,
       })).filter(c => c.name.trim() !== '');
 
-      // Update date badge + page title
+
       document.getElementById('date-badge').textContent = currentDate;
       document.title = `Таблица кадровых центров — ${currentDate} г.`;
 
