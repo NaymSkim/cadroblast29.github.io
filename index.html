@@ -460,8 +460,8 @@
 
   function delta(v, prev) {
     if (v === prev) return `<span class="delta-neu">= без изм.</span>`;
-    if (v > prev) return `<span class="delta-pos">▲ +${v - prev} за пред. нед.</span>`;
-    return `<span class="delta-neg">▼ ${v - prev} за пред. нед.</span>`;
+    if (v > prev) return `<span class="delta-pos">▲ +${v - prev} за 2 нед.</span>`;
+    return `<span class="delta-neg">▼ ${v - prev} за 2 нед.</span>`;
   }
 
   function num(v) {
@@ -619,9 +619,9 @@
             ['Трудоустроено', 'Иные причины'],
             [
               { label: 'Трудоустроено — нарастающим итогом', data: [baseTrud, 0],           backgroundColor: alpha(COLORS.blue3,0.2),    borderWidth: 0 },
-              { label: 'Трудоустроено — прирост за нед.',    data: [data.труд_нед, 0],       backgroundColor: alpha(COLORS.blue3,0.85),   borderColor: COLORS.blue3,   borderWidth: 2, datalabelColor: '#0969da' },
+              { label: 'Трудоустроено — прирост за 2 нед.',    data: [data.труд_нед, 0],       backgroundColor: alpha(COLORS.blue3,0.85),   borderColor: COLORS.blue3,   borderWidth: 2, datalabelColor: '#0969da' },
               { label: 'Иные — нарастающим итогом',          data: [0, baseInya],           backgroundColor: alpha(COLORS.orange2,0.2),  borderWidth: 0 },
-              { label: 'Иные — прирост за нед.',             data: [0, data.иная_нед],       backgroundColor: alpha(COLORS.orange2,0.85), borderColor: COLORS.orange2, borderWidth: 2, datalabelColor: '#cf222e' },
+              { label: 'Иные — прирост за 2 нед.',             data: [0, data.иная_нед],       backgroundColor: alpha(COLORS.orange2,0.85), borderColor: COLORS.orange2, borderWidth: 2, datalabelColor: '#cf222e' },
             ],
             { legend: true, stacked: true, plusLabels: true, plusLabelsFilter: 'прирост', rightPadding: 45, topPadding: 28 }
     );
