@@ -559,11 +559,11 @@
     <div class="section-label">Динамика обращений и снятий</div>
     <div class="charts-grid">
       <div class="chart-card">
-        <div class="chart-card-title">Обращение и снятие — нарастающий итог / прирост за нед.</div>
+        <div class="chart-card-title">Обращение и снятие — нарастающий итог / прирост за 4 нед.</div>
         <div class="chart-container h320"><canvas id="${panelId}-dynamics"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-card-title">Причины снятия с учёта — нарастающий итог / прирост за нед.</div>
+        <div class="chart-card-title">Причины снятия с учёта — нарастающий итог / прирост за 4 нед.</div>
         <div class="chart-container h320"><canvas id="${panelId}-reasons"></canvas></div>
       </div>
     </div>
@@ -613,9 +613,9 @@
             ['Обратились', 'Снято с учёта'],
             [
               { label: 'Обратились — нарастающим итогом', data: [baseApp, 0],                  backgroundColor: alpha(COLORS.blue,0.2),   borderWidth: 0 },
-              { label: 'Обратились — прирост за нед.',    data: [data.обратились_нед, 0],        backgroundColor: alpha(COLORS.blue,0.85),  borderColor: COLORS.blue,  borderWidth: 2, datalabelColor: '#1a7f37' },
+              { label: 'Обратились — прирост за 4 нед.',    data: [data.обратились_нед, 0],        backgroundColor: alpha(COLORS.blue,0.85),  borderColor: COLORS.blue,  borderWidth: 2, datalabelColor: '#1a7f37' },
               { label: 'Снято — нарастающим итогом',      data: [0, baseRem],                   backgroundColor: alpha(COLORS.red2,0.2),   borderWidth: 0 },
-              { label: 'Снято — прирост за нед.',         data: [0, data.сняты_нед],             backgroundColor: alpha(COLORS.red2,0.85),  borderColor: COLORS.red2,  borderWidth: 2, datalabelColor: '#cf222e' },
+              { label: 'Снято — прирост за 4 нед.',         data: [0, data.сняты_нед],             backgroundColor: alpha(COLORS.red2,0.85),  borderColor: COLORS.red2,  borderWidth: 2, datalabelColor: '#cf222e' },
             ],
             { legend: true, stacked: true, plusLabels: true, plusLabelsFilter: 'прирост', rightPadding: 45, topPadding: 28 }
     );
@@ -627,9 +627,9 @@
             ['Трудоустроено', 'Иные причины'],
             [
               { label: 'Трудоустроено — нарастающим итогом', data: [baseTrud, 0],           backgroundColor: alpha(COLORS.blue3,0.2),    borderWidth: 0 },
-              { label: 'Трудоустроено — прирост за нед.',    data: [data.труд_нед, 0],       backgroundColor: alpha(COLORS.blue3,0.85),   borderColor: COLORS.blue3,   borderWidth: 2, datalabelColor: '#0969da' },
+              { label: 'Трудоустроено — прирост за 4 нед.',    data: [data.труд_нед, 0],       backgroundColor: alpha(COLORS.blue3,0.85),   borderColor: COLORS.blue3,   borderWidth: 2, datalabelColor: '#0969da' },
               { label: 'Иные — нарастающим итогом',          data: [0, baseInya],           backgroundColor: alpha(COLORS.orange2,0.2),  borderWidth: 0 },
-              { label: 'Иные — прирост за нед.',             data: [0, data.иная_нед],       backgroundColor: alpha(COLORS.orange2,0.85), borderColor: COLORS.orange2, borderWidth: 2, datalabelColor: '#cf222e' },
+              { label: 'Иные — прирост за 4 нед.',             data: [0, data.иная_нед],       backgroundColor: alpha(COLORS.orange2,0.85), borderColor: COLORS.orange2, borderWidth: 2, datalabelColor: '#cf222e' },
             ],
             { legend: true, stacked: true, plusLabels: true, plusLabelsFilter: 'прирост', rightPadding: 45, topPadding: 28 }
     );
@@ -727,10 +727,10 @@
             <th colspan="2" style="text-align:center;border-bottom:1px solid #d0d7de">Обучение</th>
           </tr>
           <tr>
-            <th>Итого</th><th>За нед.</th>
-            <th>Итого</th><th>За нед.</th>
-            <th>Итого</th><th>За нед.</th>
-            <th>Итого</th><th>За нед.</th>
+            <th>Итого</th><th>за 4 нед.</th>
+            <th>Итого</th><th>за 4 нед.</th>
+            <th>Итого</th><th>за 4 нед.</th>
+            <th>Итого</th><th>за 4 нед.</th>
             <th>на ${currentDate}</th><th>Инвалид</th><th>ИТУ</th><th>ИТУ+Инвалид</th>
             <th>ВО</th><th>СПО</th><th>Иное</th>
             <th>до 30</th><th>30–50</th><th>51+</th>
