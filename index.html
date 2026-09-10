@@ -460,8 +460,8 @@
 
   function delta(v, prev) {
     if (v === prev) return `<span class="delta-neu">= без изм.</span>`;
-    if (v > prev) return `<span class="delta-pos">▲ +${v - prev} за пред. нед.</span>`;
-    return `<span class="delta-neg">▼ ${v - prev} за пред. нед.</span>`;
+    if (v > prev) return `<span class="delta-pos">▲ +${v - prev} за пред. 2 нед.</span>`;
+    return `<span class="delta-neg">▼ ${v - prev} за пред. 2 нед.</span>`;
   }
 
   function num(v) {
