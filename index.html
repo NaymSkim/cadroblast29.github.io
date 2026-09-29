@@ -349,7 +349,7 @@
   // =============================================
   // DATA  ← CHANGES EACH WEEK
   // =============================================
-  const REPORT_FILE = 'СВО на 10.09.2026.xlsx';  //
+  const REPORT_FILE = 'СВО на 01.10.2026.xlsx';  //
 
   let CENTERS = [];      // populated by loadReport()
   let currentDate = '—'; // extracted from xlsx sheet name
@@ -482,7 +482,7 @@
     <div class="dash-header">
       <div>
         <div class="dash-title">${data.name}</div>
-        <div class="dash-subtitle">Состояние на 7 мая 2026 г.&nbsp;·&nbsp; Еженедельная сверка</div>
+        <div class="dash-subtitle">Состояние на 1 октября 2026 г.&nbsp;·&nbsp; Еженедельная сверка</div>
       </div>
     </div>
 
@@ -606,8 +606,8 @@
     );
 
     // Dynamics: 4 datasets — base (dim) + prirост (bright) per category
-    const baseApp = data.обратились_всего - data.обратились_нед;
-    const baseRem = data.сняты_всего - data.сняты_нед;
+    const baseApp = data.обратились_всего - data.обратились_2 нед;
+    const baseRem = data.сняты_всего - data.сняты_2 нед;
     createBar(`${panelId}-dynamics`,
             ['Обратились', 'Снято с учёта'],
             [
@@ -643,7 +643,7 @@
     <div class="dash-header">
       <div>
         <div class="dash-title">Архангельская область — Сводный дашборд</div>
-        <div class="dash-subtitle">Все кадровые центры · Состояние на 7 мая 2026 г.</div>
+        <div class="dash-subtitle">Все кадровые центры · Состояние на 1 октября 2026 г.</div>
       </div>
     </div>
 
