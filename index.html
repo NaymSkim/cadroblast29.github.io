@@ -606,8 +606,8 @@
     );
 
     // Dynamics: 4 datasets — base (dim) + prirост (bright) per category
-    const baseApp = data.обратились_всего - data.обратились_2 нед;
-    const baseRem = data.сняты_всего - data.сняты_2 нед;
+    const baseApp = data.обратились_всего - data.обратились_нед;
+    const baseRem = data.сняты_всего - data.сняты_нед;
     createBar(`${panelId}-dynamics`,
             ['Обратились', 'Снято с учёта'],
             [
